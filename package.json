@@ -1,13 +1,13 @@
 
 {
-  "name": "MOMY",
+  "name": "momy-kidy",
   "version": "2.0.0",
   "description": "A WhatsApp Bot Created By SILA",
   "main": "sila.js",
   "scripts": {
-    "start": "pm2 start inconnu.js --deep-monitoring --attach --name MOMY",
-    "stop": "pm2 stop MOMY",
-    "restart": "pm2 restart MOMY"
+    "start": "pm2 start sila.js --deep-monitoring --attach --name momy-kidy",
+    "stop": "pm2 stop momy-kidy",
+    "restart": "pm2 restart momy-kidy"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "npm:angularsockets",
