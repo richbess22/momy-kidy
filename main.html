@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SILA TECH - PAIR CODE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Roboto+Mono:wght@300;400;500&display=swap');
+    
+    :root {
+      --primary: #00ff00;
+      --secondary: #00ffff;
+      --accent: #ff0055;
+      --dark: #000000;
+      --darker: #0a0a0a;
+      --matrix: #00ff00;
+      --hacker-blue: #0088ff;
+      --terminal: #202020;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: var(--dark);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--primary);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Matrix rain background */
+    #matrixCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+    }
+    
+    /* Grid overlay */
+    .grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1;
+      opacity: 0.3;
+    }
+    
+    /* Scan line */
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(to bottom, transparent, rgba(0, 255, 0, 0.3), transparent);
+      animation: scan 3s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    @keyframes scan {
+      0% { top: 0%; }
+      100% { top: 100%; }
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 20px;
+      position: relative;
+    }
+    
+    .main {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    /* Terminal box */
+    .terminal {
+      width: 100%;
+      position: relative;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(0, 255, 0, 0.3);
+      border-radius: 5px;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.2),
+        inset 0 0 20px rgba(0, 255, 0, 0.05);
+      overflow: hidden;
+      z-index: 2;
+    }
+    
+    /* Terminal header */
+    .terminal-header {
+      background: rgba(0, 20, 0, 0.8);
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .terminal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+      letter-spacing: 1px;
+    }
+    
+    .terminal-controls {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .terminal-control {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .control-close { background: #ff5f57; }
+    .control-minimize { background: #ffbd2e; }
+    .control-maximize { background: #28ca42; }
+    
+    /* Terminal content */
+    .terminal-content {
+      padding: 30px;
+    }
+    
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .welcome-text h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--primary);
+      text-shadow: 
+        0 0 10px rgba(0, 255, 0, 0.7),
+        0 0 20px rgba(0, 255, 0, 0.5);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .welcome-text h2::after {
+      content: '█';
+      animation: blink 1s infinite;
+      margin-left: 5px;
+      color: var(--primary);
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    
+    .subtitle {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 14px;
+      color: var(--secondary);
+      text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+    
+    .tagline {
+      font-size: 12px;
+      color: rgba(0, 255, 0, 0.7);
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+    }
+    
+    /* Terminal prompt */
+    .prompt {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    
+    .prompt-user {
+      color: var(--hacker-blue);
+      margin-right: 5px;
+    }
+    
+    .prompt-at {
+      color: var(--primary);
+      margin-right: 5px;
+    }
+    
+    .prompt-host {
+      color: var(--accent);
+      margin-right: 5px;
+    }
+    
+    .prompt-dir {
+      color: var(--secondary);
+      margin-right: 10px;
+    }
+    
+    .prompt-input {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 16px;
+      flex-grow: 1;
+      padding: 5px;
+      outline: none;
+      caret-color: var(--primary);
+    }
+    
+    .prompt-input::placeholder {
+      color: rgba(0, 255, 0, 0.3);
+    }
+    
+    /* ENTER BUTTON - BIG AND VISIBLE */
+    .enter-container {
+      text-align: center;
+      margin: 25px 0;
+      position: relative;
+    }
+    
+    .enter-label {
+      color: rgba(0, 255, 0, 0.5);
+      font-size: 14px;
+      margin-bottom: 15px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+    
+    .enter-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #00aa00 0%, #00ff00 100%);
+      color: #000;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      padding: 20px 50px;
+      border: 3px solid #00ff00;
+      border-radius: 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+      box-shadow: 
+        0 0 20px rgba(0, 255, 0, 0.5),
+        0 0 40px rgba(0, 255, 0, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      animation: pulse 2s infinite;
+    }
+    
+    .enter-button:hover {
+      background: linear-gradient(135deg, #00ff00 0%, #00ff66 100%);
+      transform: scale(1.05);
+      box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.7),
+        0 0 60px rgba(0, 255, 0, 0.4),
+        inset 0 0 30px rgba(255, 255, 255, 0.2);
+    }
+    
+    .enter-button:active {
+      transform: scale(0.98);
+      box-shadow: 
+        0 0 10px rgba(0, 255, 0, 0.5),
+        0 0 20px rgba(0, 255, 0, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); }
+      50% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.8); }
+      100% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.5); }
+    }
+    
+    .enter-button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transform: rotate(45deg);
+      animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    .enter-icon {
+      margin-right: 15px;
+      font-size: 24px;
+    }
+    
+    /* Loading terminal */
+    .loading-terminal {
+      display: none;
+      margin-top: 20px;
+      background: rgba(0, 20, 0, 0.3);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+      border-radius: 5px;
+      padding: 15px;
+    }
+    
+    .loading-line {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .loading-indicator {
+      width: 12px;
+      height: 12px;
+      margin-right: 10px;
+      background: var(--primary);
+      animation: loading-pulse 1.5s infinite;
+      border-radius: 2px;
+    }
+    
+    @keyframes loading-pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    /* Results display */
+    .results {
+      min-height: 80px;
+      margin-top: 20px;
+      background: rgba(0, 20, 0, 0.2);
+      border: 1px solid rgba(0, 255, 0, 0.1);
+      border-radius: 5px;
+      padding: 15px;
+      position: relative;
+    }
+    
+    /* Code display */
+    .code-terminal {
+      background: rgba(0, 10, 0, 0.8);
+      border: 1px solid rgba(0, 255, 0, 0.3);
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .code-terminal:hover {
+      background: rgba(0, 20, 0, 0.9);
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+    
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      color: var(--secondary);
+    }
+    
+    .code-value {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 3px;
+    }
+    
+    /* Error message */
+    .error-terminal {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid rgba(255, 0, 0, 0.3);
+      color: #ff5555;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    
+    /* Footer info */
+    .footer-info {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(0, 255, 0, 0.5);
+      border-top: 1px solid rgba(0, 255, 0, 0.1);
+      padding-top: 15px;
+    }
+    
+    .tech-label {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--secondary);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .terminal-content {
+        padding: 20px;
+      }
+      
+      .welcome-text h2 {
+        font-size: 24px;
+      }
+      
+      .enter-button {
+        font-size: 22px;
+        padding: 15px 30px;
+      }
+      
+      .code-value {
+        font-size: 18px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .terminal-content {
+        padding: 15px;
+      }
+      
+      .welcome-text h2 {
+        font-size: 20px;
+      }
+      
+      .enter-button {
+        font-size: 18px;
+        padding: 12px 20px;
+        letter-spacing: 2px;
+      }
+      
+      .prompt-input {
+        font-size: 14px;
+      }
+    }
+    
+    /* Glitch effect */
+    .glitch {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--dark);
+    }
+    
+    .glitch::before {
+      left: 2px;
+      text-shadow: -2px 0 #ff00ff;
+      animation: glitch-1 2s infinite linear alternate-reverse;
+    }
+    
+    .glitch::after {
+      left: -2px;
+      text-shadow: 2px 0 #00ffff;
+      animation: glitch-2 3s infinite linear alternate-reverse;
+    }
+    
+    @keyframes glitch-1 {
+      0% { clip: rect(20px, 9999px, 21px, 0); }
+      5% { clip: rect(15px, 9999px, 16px, 0); }
+      10% { clip: rect(30px, 9999px, 31px, 0); }
+      15% { clip: rect(25px, 9999px, 26px, 0); }
+      20% { clip: rect(40px, 9999px, 41px, 0); }
+      25% { clip: rect(35px, 9999px, 36px, 0); }
+      30% { clip: rect(50px, 9999px, 51px, 0); }
+      35% { clip: rect(45px, 9999px, 46px, 0); }
+      40% { clip: rect(60px, 9999px, 61px, 0); }
+      45% { clip: rect(55px, 9999px, 56px, 0); }
+      50% { clip: rect(70px, 9999px, 71px, 0); }
+      55% { clip: rect(65px, 9999px, 66px, 0); }
+      60% { clip: rect(80px, 9999px, 81px, 0); }
+      65% { clip: rect(75px, 9999px, 76px, 0); }
+      70% { clip: rect(90px, 9999px, 91px, 0); }
+      75% { clip: rect(85px, 9999px, 86px, 0); }
+      80% { clip: rect(100px, 9999px, 101px, 0); }
+      85% { clip: rect(95px, 9999px, 96px, 0); }
+      90% { clip: rect(110px, 9999px, 111px, 0); }
+      95% { clip: rect(105px, 9999px, 106px, 0); }
+      100% { clip: rect(120px, 9999px, 121px, 0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Matrix rain canvas -->
+  <canvas id="matrixCanvas"></canvas>
+  
+  <!-- Grid overlay -->
+  <div class="grid-overlay"></div>
+  
+  <!-- Scan line -->
+  <div class="scan-line"></div>
+  
+  <div class="container">
+    <div class="main">
+      <div class="terminal">
+        <!-- Terminal header -->
+        <div class="terminal-header">
+          <div class="terminal-title">
+            <i class="fas fa-terminal"></i> SILA-TECH PAIRING TERMINAL
+          </div>
+          <div class="terminal-controls">
+            <div class="terminal-control control-close"></div>
+            <div class="terminal-control control-minimize"></div>
+            <div class="terminal-control control-maximize"></div>
+          </div>
+        </div>
+        
+        <!-- Terminal content -->
+        <div class="terminal-content">
+          <!-- Welcome text -->
+          <div class="welcome-text">
+            <h2 class="glitch" data-text="SILA MD">SILA MD</h2>
+            <div class="subtitle">WHATSAPP BOT PAIRING SYSTEM</div>
+            <div class="tagline">ENTER YOUR NUMBER BELOW</div>
+          </div>
+          
+          <!-- Terminal prompt -->
+          <div class="prompt">
+            <span class="prompt-user">user</span>
+            <span class="prompt-at">@</span>
+            <span class="prompt-host">sila-tech</span>
+            <span class="prompt-dir">~/pairing</span>
+            <span class="prompt-input">$</span>
+            <input 
+              type="text" 
+              id="number" 
+              class="prompt-input" 
+              placeholder="255789661031"
+              autocomplete="off"
+              spellcheck="false"
+              autofocus
+            >
+          </div>
+          
+          <!-- BIG ENTER BUTTON - HAPA TU! -->
+          <div class="enter-container">
+            <div class="enter-label">
+              <i class="fas fa-arrow-down"></i> CLICK OR PRESS ENTER
+            </div>
+            <div class="enter-button" id="enter-button">
+              <i class="fas fa-play enter-icon"></i>ENTER
+            </div>
+          </div>
+          
+          <!-- Loading terminal -->
+          <div class="loading-terminal" id="loading-terminal">
+            <div class="loading-line">
+              <div class="loading-indicator"></div>
+              <span>INITIALIZING PAIRING SEQUENCE...</span>
+            </div>
+            <div class="loading-line">
+              <div class="loading-indicator"></div>
+              <span>CONNECTING TO WHATSAPP SERVERS...</span>
+            </div>
+            <div class="loading-line">
+              <div class="loading-indicator"></div>
+              <span>GENERATING SECURITY CODE...</span>
+            </div>
+            <div class="loading-line">
+              <div class="loading-indicator"></div>
+              <span>ESTABLISHING ENCRYPTED LINK...</span>
+            </div>
+          </div>
+          
+          <!-- Results display -->
+          <div class="results" id="results"></div>
+          
+          <!-- Footer info -->
+          <div class="footer-info">
+            <div><span class="tech-label">SILA TECH</span> - ADVANCED WHATSAPP BOT SYSTEM</div>
+            <div style="margin-top: 5px; color: rgba(0, 255, 0, 0.3);">
+              © 𝐏𝐨𝐰𝐞𝐫𝐝 𝐁𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡 | v2.0.1
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+  <script>
+    // Matrix rain effect
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%"#&_(),.;:?!\\|{}<>[]^~';
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = [];
+    
+    // Initialize drops
+    for (let i = 0; i < columns; i++) {
+      drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+    }
+    
+    function drawMatrix() {
+      // Semi-transparent black to create trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.font = `${fontSize}px 'Share Tech Mono'`;
+      ctx.fillStyle = '#0F0';
+      
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        const x = i * fontSize;
+        const y = drops[i] * 1;
+        
+        // Main character (bright)
+        ctx.fillStyle = '#0F0';
+        ctx.fillText(text, x, y);
+        
+        // Trail characters (fading)
+        for (let j = 1; j < 5; j++) {
+          const trailY = y - j * fontSize;
+          if (trailY > 0) {
+            const alpha = 0.2 - (j * 0.04);
+            ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
+            ctx.fillText(letters[Math.floor(Math.random() * letters.length)], x, trailY);
+          }
+        }
+        
+        drops[i]++;
+        
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+      }
+    }
+    
+    // Matrix animation
+    setInterval(drawMatrix, 50);
+    
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+    
+    // DOM elements
+    const numberInput = document.getElementById('number');
+    const enterButton = document.getElementById('enter-button');
+    const resultsDiv = document.getElementById('results');
+    const loadingTerminal = document.getElementById('loading-terminal');
+    
+    // Auto-focus on input
+    numberInput.focus();
+    
+    // Enter key to submit (both from input and anywhere on page)
+    numberInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        submitForm();
+      }
+    });
+    
+    // Also allow Enter key from anywhere on page
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        submitForm();
+      }
+    });
+    
+    // Click on ENTER button
+    enterButton.addEventListener('click', submitForm);
+    
+    // Format phone number
+    function formatPhoneNumber(phoneNumber) {
+      const cleaned = phoneNumber.replace(/\D/g, '');
+      if (cleaned.length <= 3) return '+' + cleaned;
+      if (cleaned.length <= 6) return '+' + cleaned.slice(0, 3) + ' ' + cleaned.slice(3);
+      if (cleaned.length <= 9) return '+' + cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6);
+      return '+' + cleaned.slice(0, 3) + ' ' + cleaned.slice(3, 6) + ' ' + cleaned.slice(6, 9) + ' ' + cleaned.slice(9, 12);
+    }
+    
+    // Copy to clipboard
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        return false;
+      }
+    }
+    
+    // Submit function
+    async function submitForm() {
+      const phoneNumber = numberInput.value.trim();
+      const cleanedNumber = phoneNumber.replace(/\D/g, '');
+      
+      // Show loading
+      loadingTerminal.style.display = 'block';
+      resultsDiv.innerHTML = '';
+      
+      // Add pulse effect to ENTER button
+      enterButton.style.animation = 'none';
+      enterButton.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        enterButton.style.animation = 'pulse 2s infinite';
+        enterButton.style.transform = 'scale(1)';
+      }, 150);
+      
+      // Validate input
+      if (!phoneNumber) {
+        loadingTerminal.style.display = 'none';
+        resultsDiv.innerHTML = `
+          <div class="error-terminal">
+            <i class="fas fa-exclamation-triangle"></i> ERROR: NO INPUT DETECTED
+            <div style="margin-top: 10px; font-size: 12px;">
+              PLEASE ENTER YOUR WHATSAPP NUMBER
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      if (cleanedNumber.length < 10) {
+        loadingTerminal.style.display = 'none';
+        resultsDiv.innerHTML = `
+          <div class="error-terminal">
+            <i class="fas fa-exclamation-triangle"></i> ERROR: INVALID NUMBER
+            <div style="margin-top: 10px; font-size: 12px;">
+              EXAMPLE: 255789661031 OR +255789661031
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      // Format display
+      numberInput.value = formatPhoneNumber(cleanedNumber);
+      
+      try {
+        // Make API call
+        const { data } = await axios.get(`/code?number=${cleanedNumber}`);
+        const code = data.code || 'SERVICE_UNAVAILABLE';
+        
+        // Hide loading
+        loadingTerminal.style.display = 'none';
+        
+        // Display code
+        resultsDiv.innerHTML = `
+          <div style="color: var(--secondary); margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
+            <i class="fas fa-key"></i> PAIRING CODE GENERATED
+          </div>
+          
+          <div class="code-terminal" id="code-terminal">
+            <div class="code-header">
+              <span>SECURITY CODE</span>
+              <span style="color: rgba(0, 255, 0, 0.5); font-size: 12px;">
+                <i class="far fa-clock"></i> VALID FOR 5 MINUTES
+              </span>
+            </div>
+            <div class="code-value" id="code-value">${code}</div>
+            <div style="margin-top: 10px; text-align: center; color: rgba(0, 255, 0, 0.7); font-size: 12px;">
+              <i class="fas fa-mouse-pointer"></i> CLICK TO COPY
+            </div>
+          </div>
+          
+          <div style="margin-top: 15px; color: rgba(0, 255, 0, 0.5); font-size: 12px;">
+            <i class="fas fa-info-circle"></i> INSTRUCTIONS:
+            <div style="margin-top: 5px; padding-left: 10px;">
+              1. OPEN WHATSAPP ON PHONE<br>
+              2. SETTINGS → LINKED DEVICES<br>
+              3. TAP "LINK A DEVICE"<br>
+              4. ENTER CODE: <strong style="color: var(--primary);">${code}</strong>
+            </div>
+          </div>
+        `;
+        
+        // Add copy functionality
+        const codeTerminal = document.getElementById('code-terminal');
+        const codeValue = document.getElementById('code-value');
+        
+        codeTerminal.addEventListener('click', async () => {
+          const originalText = codeValue.textContent;
+          const copied = await copyToClipboard(originalText);
+          
+          if (copied) {
+            codeValue.textContent = '✓ COPIED!';
+            codeValue.style.color = '#00ff00';
+            codeValue.style.textShadow = '0 0 15px #00ff00';
+            
+            setTimeout(() => {
+              codeValue.textContent = originalText;
+              codeValue.style.color = '';
+              codeValue.style.textShadow = '';
+            }, 2000);
+          }
+        });
+        
+      } catch (error) {
+        // Hide loading
+        loadingTerminal.style.display = 'none';
+        
+        // Display error
+        resultsDiv.innerHTML = `
+          <div class="error-terminal">
+            <i class="fas fa-skull-crossbones"></i> CONNECTION ERROR
+            <div style="margin-top: 10px; font-size: 12px;">
+              SERVER UNAVAILABLE
+            </div>
+          </div>
+        `;
+      }
+    }
+    
+    // Add some terminal startup effects
+    setTimeout(() => {
+      console.log("[SYSTEM] SILA MD Pairing Terminal initialized");
+      console.log("[SECURITY] Encryption protocols active");
+      console.log("[NETWORK] Ready for pairing requests");
+    }, 1000);
+  </script>
+</body>
+</html>
